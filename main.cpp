@@ -63,6 +63,9 @@ int main() {
         }
         bird.setPosition(birdPos); //Doing the actual clamping of the bird
 
+        topPipe.move({-pipeSpeed * deltaTime, 0.f}); // Makes the top pipe move left (No changes vertically)
+        bottomPipe.move({-pipeSpeed * deltaTime, 0.f}); // Makes the bottom pipe move left (No changes vertically)
+
         window.clear(); //Clears the window to a black color for redrawing (re-rendering) the next frame.
         window.draw(topPipe); //Draws the top pipt to the window.
         window.draw(bottomPipe); //Draws the bottom pipt to the window. 
