@@ -1,0 +1,10 @@
+.claude/
+.DS_Store
+
+# Build outputs — never commit compiled binaries or object files,
+# they're regenerated from source every time.
+build/
+*.o
+*.out
+hello_world
+hellow_world
