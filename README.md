@@ -1,1 +1,1 @@
-This is a work-in-progress project in which I am actively refining my knowledge in C++
+This is a work-in-progress project in which I am actively refining my knowledge in C++. The result will be a continuous game with a graphical user interface where you can select a play button and use your space bar to go through the moving pipes. 
