@@ -7,4 +7,5 @@ build/
 *.o
 *.out
 hello_world
-hellow_world
+
+main
