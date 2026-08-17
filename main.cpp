@@ -21,6 +21,10 @@ int main() {
     float pipeGap = 200.f; //Vertical gap between the top and bottom pipes.
     float gapCenterY = 300.f; //Vertical position of the center of the gap between the pipes.
     float pipeSpeed = 200.f; //Horizontal speed of the pipes, in pixels per second.(Moving leftward)
+
+    //Also need to add boundaries for the window to tell when the bird hits the cieling and the floor
+    float cieling = 0.f;
+    float ground = 600.f;
     
     sf::RectangleShape topPipe({pipeWidth, gapCenterY - pipeGap / 2.f}); //Top pipe
     topPipe.setFillColor(sf::Color::Green); //Fills the top pipe with green color
@@ -37,7 +41,7 @@ int main() {
             }
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()){
                 if (keyPressed->code == sf::Keyboard::Key::Space) {
-                    velocity = jumpStrength;; //When the space bar is pressed, the bird's vertical velocity is set to a negative value, causing it to move upward on the screen. 
+                    velocity = jumpStrength; //When the space bar is pressed, the bird's vertical velocity is set to a negative value, causing it to move upward on the screen. 
                 }
             }
         }
@@ -45,6 +49,19 @@ int main() {
         velocity += gravity * deltaTime; //Updates the bird's vertical velocity based on the acceleration due to gravity
         bird.move({0.f, velocity * deltaTime}); //Updates the bird's position based on its velocity and the time elapsed since the last frame. 
 
+
+        //The following code is for when the bird hits the cieling and the floor. Restricting the bird from going outside of the window. 
+        sf::Vector2f birdPos = bird.getPosition(); //Getting the current location of the bird
+        if (birdPos.y < 0.f) { //If the bird's position is above the visible window
+            birdPos.y = cieling; //Clamping the birds position to the ceiling
+            velocity = 0.f; //Stops the bird from moving
+        }
+
+        if (birdPos.y + bird.getSize().y > 600.f) {
+            birdPos.y = ground - bird.getSize().y;
+            velocity = 0.f;
+        }
+        bird.setPosition(birdPos); //Doing the actual clamping of the bird
 
         window.clear(); //Clears the window to a black color for redrawing (re-rendering) the next frame.
         window.draw(topPipe); //Draws the top pipt to the window.
