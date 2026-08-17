@@ -16,6 +16,20 @@ int main() {
     const float jumpStrength = -400.f; //The upward force applied to the bird when the space bar is pressed. 
 
 
+    //Following is for the pipes 
+    float pipeWidth = 80.f; //Width of the pipes
+    float pipeGap = 200.f; //Vertical gap between the top and bottom pipes.
+    float gapCenterY = 300.f; //Vertical position of the center of the gap between the pipes.
+    float pipeSpeed = 200.f; //Horizontal speed of the pipes, in pixels per second.(Moving leftward)
+    
+    sf::RectangleShape topPipe({pipeWidth, gapCenterY - pipeGap / 2.f}); //Top pipe
+    topPipe.setFillColor(sf::Color::Green); //Fills the top pipe with green color
+    topPipe.setPosition({700.f, 0.f}); //Places the top pipe at the right edge of the window, at the top (y=0)
+
+    sf::RectangleShape bottomPipe({pipeWidth, 600.f - (gapCenterY + pipeGap / 2.f)}); //Bottom pipe
+    bottomPipe.setFillColor(sf::Color::Green); //Fills the bottom pipt with green color
+    bottomPipe.setPosition({700.f, gapCenterY + pipeGap / 2.f}); //Places the bottom pipe at the right edge of the window. 
+
     while (window.isOpen()) {
         while(const std::optional<sf::Event> event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
@@ -33,6 +47,8 @@ int main() {
 
 
         window.clear(); //Clears the window to a black color for redrawing (re-rendering) the next frame.
+        window.draw(topPipe); //Draws the top pipt to the window.
+        window.draw(bottomPipe); //Draws the bottom pipt to the window. 
         window.draw(bird); //Draws the bird sprite to the window.
         window.display(); //Displays the contents of the window to the screen. This is the last step in the rendering process for each frame. 
     }
