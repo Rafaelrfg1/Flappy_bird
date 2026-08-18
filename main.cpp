@@ -1,4 +1,34 @@
 #include <SFML/Graphics.hpp>
+#include <vector> 
+#include <random>
+
+
+
+
+//Combing the related data for the pipes so I can resuse them
+struct Pipe {
+    sf::RectangleShape top;
+    sf::RectangleShape bottom;
+};
+
+const float pipeWidth = 80.f;
+const float pipeGap = 200.f;
+
+//Creating a function to create the multiple pipes that are going to be used. 
+Pipe createPipe(float xPosition, std::mt19937& rng, std::uniform_real_distribution<float>& gapDist) {
+    float gapCenterY = gapDist(rng); //Gets a random center for the pipes
+
+    Pipe pipe;
+    pipe.top.setSize({pipeWidth, gapCenterY - pipeGap / 2.f});
+    pipe.top.setFillColor(sf::Color::Green);
+    pipe.top.setPosition({xPosition, 0.f});
+
+    pipe.bottom.setSize({pipeWidth, 600.f - (gapCenterY + pipeGap / 2.f)});
+    pipe.bottom.setFillColor(sf::Color::Green);
+    pipe.bottom.setPosition({xPosition, gapCenterY + pipeGap/2.f});
+
+    return pipe;
+}
 
 int main() {
     sf::RenderWindow window(sf::VideoMode({800, 600}), "Flappy Bird");
@@ -13,26 +43,26 @@ int main() {
     sf::Clock clock; //Tracks the time elapsed between frames, which is important for calculating the bird's movement based on time rather than frame rate. 
     float velocity = 0.f; //The bird's vertical velocity, in pixels per second. Initial condition is 0 (Bird is not moving yet) and lives outside the loop to initialize it only
     const float gravity = 500.f; //The acceleration due to gravity, in pixels per second squared
-    const float jumpStrength = -400.f; //The upward force applied to the bird when the space bar is pressed. 
+    const float jumpStrength = -300.f; //The upward force applied to the bird when the space bar is pressed. 
 
 
-    //Following is for the pipes 
-    float pipeWidth = 80.f; //Width of the pipes
-    float pipeGap = 200.f; //Vertical gap between the top and bottom pipes.
-    float gapCenterY = 300.f; //Vertical position of the center of the gap between the pipes.
+   
     float pipeSpeed = 200.f; //Horizontal speed of the pipes, in pixels per second.(Moving leftward)
 
     //Also need to add boundaries for the window to tell when the bird hits the cieling and the floor
     float cieling = 0.f;
     float ground = 600.f;
     
-    sf::RectangleShape topPipe({pipeWidth, gapCenterY - pipeGap / 2.f}); //Top pipe
-    topPipe.setFillColor(sf::Color::Green); //Fills the top pipe with green color
-    topPipe.setPosition({700.f, 0.f}); //Places the top pipe at the right edge of the window, at the top (y=0)
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::uniform_real_distribution<float> gapDist(150.f, 450.f);
+    
+    std::vector<Pipe> pipes;
+    float pipeSpawnTimer = 2.f;
+    const float pipeSpawnInterval = 2.f;
 
-    sf::RectangleShape bottomPipe({pipeWidth, 600.f - (gapCenterY + pipeGap / 2.f)}); //Bottom pipe
-    bottomPipe.setFillColor(sf::Color::Green); //Fills the bottom pipt with green color
-    bottomPipe.setPosition({700.f, gapCenterY + pipeGap / 2.f}); //Places the bottom pipe at the right edge of the window. 
+
+    
 
     while (window.isOpen()) {
         while(const std::optional<sf::Event> event = window.pollEvent()) {
@@ -46,6 +76,13 @@ int main() {
             }
         }
         float deltaTime = clock.restart().asSeconds(); //Calculates the time elapsed since the last frame(loop), which is used to update the bird's position based on its velocity
+        
+        pipeSpawnTimer += deltaTime; 
+        if (pipeSpawnTimer >= pipeSpawnInterval) {
+            pipes.push_back(createPipe(800.f, rng, gapDist));
+            pipeSpawnTimer = 0.f;
+
+        }
         velocity += gravity * deltaTime; //Updates the bird's vertical velocity based on the acceleration due to gravity
         bird.move({0.f, velocity * deltaTime}); //Updates the bird's position based on its velocity and the time elapsed since the last frame. 
 
@@ -63,12 +100,25 @@ int main() {
         }
         bird.setPosition(birdPos); //Doing the actual clamping of the bird
 
-        topPipe.move({-pipeSpeed * deltaTime, 0.f}); // Makes the top pipe move left (No changes vertically)
-        bottomPipe.move({-pipeSpeed * deltaTime, 0.f}); // Makes the bottom pipe move left (No changes vertically)
+
+        for (Pipe& pipe : pipes) {
+            pipe.top.move({-pipeSpeed * deltaTime, 0.f});
+            pipe.bottom.move({-pipeSpeed * deltaTime, 0.f});
+        }
+
+        for (int i = static_cast<int>(pipes.size()) -1; i >= 0; i--) {
+            if (pipes[i].top.getPosition().x + pipeWidth < 0.f) {
+                pipes.erase(pipes.begin() + i);
+            }
+        }
 
         window.clear(); //Clears the window to a black color for redrawing (re-rendering) the next frame.
-        window.draw(topPipe); //Draws the top pipt to the window.
-        window.draw(bottomPipe); //Draws the bottom pipt to the window. 
+        //After clearing the window the pipes will then be drawn
+        for (const Pipe& pipe : pipes) {
+            window.draw(pipe.top);
+            window.draw(pipe.bottom);
+        }
+        
         window.draw(bird); //Draws the bird sprite to the window.
         window.display(); //Displays the contents of the window to the screen. This is the last step in the rendering process for each frame. 
     }
